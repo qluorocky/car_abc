@@ -15,12 +15,13 @@ class Predictor:
         
     def predict(self, path):
         if not self.model:
-            print("This predictor is not trained yet!")
+            print("This Markvo_Predictor is not trained yet.")
             return None
         else:
             return self.road_graph.neighbors(path[-1]), self.model(path)
-        
-    def eval(self, test_data): # not fast, may need to improve speed (vectorize it!)
+
+    def eval(self, test_data):
+        # not fast, may need to improve speed (vectorize it!)
         loss = 0
         count = 0
         for path in test_data:
@@ -31,19 +32,46 @@ class Predictor:
                 loss += log_loss(nb == n, pred)
                 count += 1
                 p.append(path[i])
-                if count % 1000 == 0:
-                    print("Processed {} road!".format(count))
+                #if count % 100 == 0:
+                #    print(count)
         return loss/count
 
+    
+
 class Random_Predictor(Predictor):
+    def __init__(self, road_graph):
+        self.road_graph = road_graph
+        self.model = None
     def _random_guess(self, node):
         n = len(self.road_graph.neighbors(node))
         return np.ones(n) / n
     def predict(self, path):
         cur = path[-1]
+        # predict next node, and its distribution
         return self.road_graph.neighbors(cur), self._random_guess(cur)
+    def eval(self, test_data):
+        # not fast, may need to improve speed (vectorize it!)
+        loss = 0
+        count = 0
+        for path in test_data:
+            p = [path[0]]
+            for i in range(1, len(path)):
+                nb, pred = self.predict(p)
+                n = path[i]
+                loss += log_loss(nb == n, pred)
+                count += 1
+                p.append(path[i])
+                #if count % 100 == 0:
+                #    print(count)
+        return loss/count
 
-class Markov_Predictor(Predictor):
+class Markov_Predictor(Random_Predictor):
+    def predict(self, path):
+        if not self.model:
+            print("This Markvo_Predictor is not trained yet.")
+            return None
+        else:
+            return self.road_graph.neighbors(path[-1]), self.model(path)
     def train(self, data):
         table = dict.fromkeys(self.road_graph.nodes)
         for k in table:
@@ -62,10 +90,24 @@ class Markov_Predictor(Predictor):
         self.model = f
     
 
-class NN_Markov_Predictor(Predictor):
+class NN_Markov_Predictor:
+    def __init__(self, road_graph):
+        self.road_graph = road_graph
+        self.prediction = {}
+    
+    def predict(self, path):
+        if not self.prediction:
+            print("This Markvo_Predictor is not trained yet.")
+            return None
+        else:
+            cur = path[-1]
+            # predict next node, and its distribution
+            return self.road_graph.neighbors(cur), self.prediction[cur]
+    
     def train(self, data):
         # TODO
         pass
+    
     # def train(self, data, batch_size = 50, learning_rate = 0.001, steps = 10000):
     #     D_in, D_hidden, D_out = len(road_graph.nodes), 100, 4
     #     model = torch.nn.Sequential(
@@ -85,7 +127,20 @@ class NN_Markov_Predictor(Predictor):
     #         optimizer.step()
 
 
-class RNN_Predictor(Predictor):
+
+class RNN_Predictor:
+    def __init__(self, road_graph):
+        self.road_graph = road_graph
+        self.parameters = {} # TODO
+    
+    def predict(self, path):
+        if not self.parameters:
+            print("This Markvo_Predictor is not trained yet.")
+            return None
+        else:
+            # TODO
+            pass
+    
     def train(self, data):
         #TODO
         pass

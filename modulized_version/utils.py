@@ -1,3 +1,5 @@
+import numpy as np
+
 def one_hot(x, N):
     l = np.zeros(N)
     l[x] = 1
