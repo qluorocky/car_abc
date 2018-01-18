@@ -6,7 +6,7 @@ from torch.autograd import Variable
 from torch import nn
 import matplotlib.pyplot as plt
 from torch import autograd
-from sklearn.metrics import log_loss
+from utils import log_loss
 
 class Predictor:
     def __init__(self, road_graph):

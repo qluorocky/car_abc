@@ -17,8 +17,11 @@ class Road_Graph():
     @property
     def edges(self):
         return np.array(self.graph.edges)
-    def neighbors(self, node):
-        return np.array(list(self.graph.neighbors(node)))
+    def neighbors(self, x):
+        #import pdb; pdb.set_trace()
+        if type(x) == list or type(x) == np.ndarray:
+            return [list(self.graph.neighbors(i)) for i in x]
+        return np.array(list(self.graph.neighbors(x)))
     def read_pathes(self, pathes):
         for p in pathes:
             self.graph.add_path(p)
