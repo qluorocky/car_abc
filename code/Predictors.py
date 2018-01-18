@@ -11,15 +11,13 @@ from utils import log_loss
 class Predictor:
     def __init__(self, road_graph):
         self.road_graph = road_graph
-        self.model = None
-        
+        self.model = None 
     def predict(self, path):
         if not self.model:
             print("This predictor is not trained yet!")
             return None
         else:
-            return self.road_graph.neighbors(path[-1]), self.model(path)
-        
+            return self.road_graph.neighbors(path[-1]), self.model(path)   
     def eval(self, test_data): # not fast, may need to improve speed (vectorize it!)
         loss = 0
         count = 0
