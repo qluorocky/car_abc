@@ -12,6 +12,9 @@ class Road_Graph():
         G.add_edges_from(edges)
         return G
     @property
+    def num_nodes(self):
+        return self.graph.number_of_nodes()
+    @property
     def nodes(self):
         return np.array(self.graph.nodes)
     @property
