@@ -114,7 +114,7 @@ class RNN_Predictor(Predictor):
             loss_list.append(-torch.log(prob[np.where(nb == y)]))
         return torch.sum(torch.cat(loss_list))
 
-    def _get_prob(path):
+    def _get_prob(self, path):
         W = self.W
         h = self.rnn.init_hidden()
         for i in path:
