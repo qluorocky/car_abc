@@ -27,7 +27,7 @@ def random_path_not_back(graph, start = None, stop_prob = 0.1):
     prev = None
     while True:
         neighbors = list(graph.neighbors(start))
-        if prev and prev in neighbors:
+        if prev in neighbors:
             neighbors.remove(prev)
         nxt = np.random.choice(neighbors)
         path.append(nxt)

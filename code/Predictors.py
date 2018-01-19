@@ -89,7 +89,7 @@ class NN_Markov_Predictor(Predictor):
 class RNN_Predictor(Predictor):
     def __init__(self, graph, im_D = 50, h_D = 100):
         super().__init__(graph)
-        self.W = Variable(torch.randn(graph.num_nodes, im_D).type(torch.FloatTensor), requires_grad=True) # we first use random embeding (may use road2vec later)
+        self.W = Variable(torch.randn(graph.num_nodes, im_D).type(torch.FloatTensor)) # we first use random embeding (may use road2vec later)
         self.rnn = RNN(im_D, h_D, im_D)
         self.model = None 
 
@@ -97,11 +97,11 @@ class RNN_Predictor(Predictor):
         W = self.W
         h = self.rnn.init_hidden()
         output_list = []
-        for i in path:
+        for i in path[:-1]:
             o, h = self.rnn(W[i], h)
             output_list.append(o)
         loss_list = []
-        for i in range(len(path) - 1):
+        for i in range(len(path) - 1): # vectorize!
             x = path[i]
             y = path[i+1]
             nb = self.graph.neighbors(x)
@@ -129,25 +129,34 @@ class RNN_Predictor(Predictor):
         prob = F.softmax(logit, dim = 0)
         return prob
     
-    def train(self, data, lr = 0.001, batch_size = 50):
+    def train(self, data, steps = 10000, learning_rate = 0.00005, batch_size = 100):        
+        self.model = self._get_prob
         
-        optimizer = torch.optim.Adam(self.rnn.parameters(), lr=0.001) # remove [W] for a fixed random embeding
+        optimizer = torch.optim.Adam(self.rnn.parameters(), lr=learning_rate) # remove [W] for a fixed random embeding
         loss_list = []
         s = 0
-        for k in range(len(data)):
-            path = data[k]
+        ss = 0
+        loss_every_n = 0
+        for k in range(steps):
+            path = data[k%len(data)]
             loss = self._path_loss(path)
             loss_list.append(loss)
             s += len(path)
-            if k%batch_size == 0:
-                batch_loss = torch.sum(torch.cat(loss_list)) / s
+            ss += len(path)
+            loss_every_n += loss.data.numpy()[0]
+            if (k+1) % batch_size == 0:
+                batch_loss = torch.sum(torch.cat(loss_list)) #/ s
                 s = 0
                 optimizer.zero_grad()
                 batch_loss.backward()
                 optimizer.step()
                 loss_list = []
-                print(batch_loss.data.numpy())
-        self.model = self._get_prob
+            if (k+1) % 1000 == 0:
+                print('Loss after {} steps: {}'.format(k+1, loss_every_n / ss))
+                loss_every_n = 0
+                ss = 0
+            if (k+1) % len(data) == 0:
+               np.random.shuffle(data)
 
 
 # class Markov_Predictor:
